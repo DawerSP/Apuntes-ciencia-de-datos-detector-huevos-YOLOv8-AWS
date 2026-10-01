@@ -1,82 +1,50 @@
-#  Guía de Estudio: Modelos Secuenciales en TensorFlow y Keras
+Detector de Huevos en Tiempo Real (Sano vs. Roto)
 
-¡Bienvenido a este repositorio! Este material ha sido diseñado como una **guía interactiva de estudio práctico y teórico**. Aquí aprenderás los fundamentos esenciales sobre la construcción, entrenamiento e inspección de redes neuronales utilizando **TensorFlow** y **Keras**.
 
->  **IMPORTANTE:** Los conceptos, estructuras de código y ejercicios explicados en este cuaderno forman parte de los **temas evaluados en el próximo examen. Utiliza este repositorio como tu material principal de repaso.
+Sistema de Visión Artificial e Inteligencia Artificial Desplegado en AWS EC2Este proyecto implementa un sistema completo de Visión por Computador y Deep Learning capaz de detectar y clasificar huevos en tiempo real como SANO, ROTO o en REVISIÓN, utilizando la cámara de un dispositivo móvil o computadora.
 
----
 
-##  ¿Qué vas a aprender?
+ Demostración y Arquitectura del SistemaEl flujo de trabajo abarca desde la captura del frame hasta la inferencia en la nube:[ Dispositivo Móvil / Laptop ]
+            │ (Video Stream / Frames en JPEG)
+            ▼
+[ Cliente Web (HTML5 Canvas + JS Fetch) ]
+            │ (POST /predict)
+            ▼
+[ Servidor AWS EC2 (Ubuntu 24.04 LTS) ]
+    ├── FastAPI App (ASGI Server - Uvicorn)
+    ├── Modelo YOLOv8 (Ultralytics - Deep Learning)
+    └── Visión por Computador (OpenCV & NumPy)
+            │ (Coordenadas Bounding Boxes + Diagnóstico)
+            ▼
+[ Overlay Dibujado en Tiempo Real ]
 
-**1. Fundamentos Teóricos de Keras**
-* **Construcción de Arquitecturas:** Aprenderás las 3 formas estándar de definir modelos en Keras (lista en `Sequential`, método incremental `.add()`, y la **API Funcional**).
-* **Entorno de Trabajo:** Inspección del sistema (Python `3.12.12`), verificación de librerías y comprobación de soporte para GPU mediante `!nvidia-smi`].
 
-**2. Práctica Aplicada (Paso a Paso)**
-* **Regresión Lineal Simple:** Definición y entrenamiento de un perceptrón (una sola neurona).
-* **Ejercicio Celsius a Fahrenheit:** Implementación de un modelo que aprende de forma autónoma la conversión matemática $Fahrenheit = (Celsius \times 1.8) + 32$
-* **Estructura de Datos:** Creación de tensores/arreglos NumPy, preparación de características/etiquetas y separación de datos de entrenamiento (80%) y validación (20%)[
+ Tecnologías UtilizadasLenguaje: Python 3.12+Deep Learning Framework: Ultralytics YOLOv8 (PyTorch)Visión por Computador: OpenCV, NumPyBackend API: FastAPI, UvicornCloud Platform: Amazon Web Services (AWS EC2 - AWS Academy)Sistema Operativo Servidor: Ubuntu 24.04 LTSFrontend: HTML5, CSS3, JavaScript (Fetch API, WebRTC MediaDevices)
+ 
+ 
+  Puntos Claves Realizados en la Práctica (AWS EC2)Configuración de la Instancia EC2 en AWS:Creación y aprovisionamiento de una instancia Ubuntu Server en la nube.Configuración del Grupo de Seguridad (Security Group) para permitir tráfico SSH (Puerto 22) e Inbound HTTP en el puerto 8000.Conexión remota segura vía SSH utilizando llaves de autenticación privada (.pem).Despliegue del Modelo e Inferencia backend:Carga y optimización del modelo preentrenado best.pt con YOLOv8.Desarrollo de un servicio backend de alto rendimiento con FastAPI para procesar multi-part form requests con cuadros de imagen decodificados al vuelo con OpenCV (cv2.imdecode).
+  
+  
+  Lógica de Visión por Computador & Calibración Anti-Sesgo:Implementación de análisis espacial de Bounding Boxes e Intersección sobre Unión (IoU).Eliminación del sesgo de color (evitando la confusión entre cáscaras marrones/blancas y roturas físicas).Lógica condicional de estados por nivel de confianza ($Confidence Thresholds$):SANO: Huevo detectado sin evidencia de discontinuidad en la superficie.ROTO: Detección de fisura/grieta con $Confianza \ge 50\%$.REVISIÓN: Indicios leves de imperfección con $30\% \le Confianza < 50\%$.Automatización como Servicio del Sistema (Systemd):Configuración de un Demonio/Servicio systemd (egg-detector.service) en Linux para garantizar ejecución 24/7 en segundo plano y reinicio automático ante fallos de la instancia.
+ 
+  Estructura del Proyecto.
+├── main.py              # Código fuente principal (FastAPI + YOLOv8 + Dashboard Web)
+├── best.pt              # Pesos del modelo entrenado YOLOv8
+├── requirements.txt     # Dependencias del proyecto Python
+├── .gitignore           # Archivos ignorados por Git (entornos virtuales, keys, etc.)
+└── README.md            # Documentación del proyecto
+🔧 Instalación y Ejecución LocalClonar el repositorio:git clone https://github.com/DawerSPMain/Apuntes-Ciencia-de-Datos-nuevo.git
+cd Apuntes-Ciencia-de-Datos-nuevo
+Crear y activar entorno virtual:python -m venv .venv
+# En Windows:
+.venv\Scripts\activate
+# En Linux/Mac:
+source .venv/bin/activate
+Instalar dependencias:pip install -r requirements.txt
+Ejecutar servidor de desarrollo:uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+Abrir el navegador en http://localhost:8000.🌐 Comandos de Administración en AWS EC2Para conectarse al servidor y verificar el estado del servicio en tiempo real:Conexión por SSH:ssh -i ruta/de/tu-clave.pem ubuntu@52.54.184.190
+Reiniciar el servicio en la nube:sudo systemctl restart egg-detector
+Ver los logs de ejecución:sudo journalctl -u egg-detector -f
 
----
-#  2 Redes Neuronales Densas (MLP) - Clasificación de Círculos Concéntricos
 
-Este repositorio contiene un cuaderno de Jupyter Notebook (`Cuaderno 4. Redes densas.ipynb`) desarrollado por **Alfredo Diaz**. El proyecto combina fundamentos teóricos sobre arquitecturas de redes neuronales profundas con una práctica guiada para resolver un problema de clasificación no linealmente separable utilizando **TensorFlow / Keras** y **scikit-learn**.
-
--
-El cuaderno se divide en dos bloques principales: **Fundamentos Teóricos** y **Práctica Guiada**.
-
-### Fundamentos Teóricos
-
-#### 🔹 Funciones de Activación
-Explicación detallada, fórmulas matemáticas, rangos y usos recomendados para:
-* **ReLU (Rectified Linear Unit)**: Opción por defecto para capas ocultas.
-* **Sigmoid**: Ideal para capas de salida en clasificación binaria.
-* **Tanh (Tangente Hiperbólica)**: Recomendada para capas ocultas con datos centrados en cero.
-* **Linear (Identidad)**: Uso exclusivo en la capa de salida para problemas de regresión (*por defecto en Keras*).
-* **Softmax**: Salida para clasificación multiclase exclusiva.
-
-#### 🔹 Funciones de Pérdida (Loss Functions) y Métricas
-* **Regresión**: Mean Squared Error (MSE), Mean Absolute Error (MAE).
-* **Clasificación Binaria**: Binary Crossentropy ($\text{Sigmoid} + \text{Binary Crossentropy}$).
-* **Clasificación Multiclase**: Categorical Crossentropy (One-hot) y Sparse Categorical Crossentropy (Enteros).
-* **Diferencia clave**: La función de pérdida guía el aprendizaje (diferenciable); la métrica evalúa el rendimiento general.
-
-#### 🔹 Arquitectura y Entrenamiento
-* **Tamaño de Batch**: Concepto de Mini-batch Gradient Descent y tamaños recomendados (16, 32, 64, 128).
-* **Diseño de Capas Ocultas**: Recomendaciones sobre el número de neuronas y compresión progresiva de características.
-* **Partición de Datos**: Estrategias de división para Train, Validation y Test.
-* **Detección de Sobreajuste (Overfitting)**: Identificación de brechas entre `loss` y `val_loss`.
-* **Early Stopping**: Uso de callbacks en Keras (`patience`, `min_delta`, `restore_best_weights`).
-
----
-
-###  Práctica: Clasificación de Círculos Concéntricos
-
-Un taller práctico de clasificación binaria no lineal utilizando el conjunto de datos sintético `make_circles` de `scikit-learn`.
-##  Puntos Clave para el Examen
-
-Asegúrate de dominar los siguientes elementos presentes en el código:
-
-* **Comparativa de APIs:** Identificar sintácticamente `model_a`, `model_b` y `model_c`
-* **Flujo de Entrenamiento:** Uso correcto de los métodos `.compile()`, `.fit()` y evaluación de métricas.
-* **Dimensiones de Entrada:** Manejo de la forma de los datos (`input_shape`) tanto para problemas sintéticos multivariables `(1000, 20)` como unidimensionales `(12,)
-
----
-
-##  ¿Qué encontrarás en el repositorio?
-
-Al abrirlos cuaderno sde Jupyter (`.ipynb`), serás guiado a través celdas organizadas lógicamente
-
-Teoría y Practica 
-
-inspección de resultados
-
----
-
-##  Requisitos Rápidos
-
-Para ejecutar y experimentar con el código localmente con VsC o en Google Colab:
-* **Python 3.12+**
-* Librerías: `tensorflow`, `numpy`, `matplotlib`
-
-¡Abre el cuaderno, ejecuta las celdas en orden, analiza cada sección y prepárate para el quiz!
+ AutorProyecto desarrollado para la materia de Ciencia de Datos / Inteligencia Artificial
